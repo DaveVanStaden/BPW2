@@ -14,10 +14,14 @@ namespace Example
         public GameObject CorridorFloorPrefab;
         public GameObject WallPrefab;
         public GameObject Player;
+        public GameObject CurrentPlayer;
         public GameObject Enemy;
+        public GameObject EndPoint;
         public GameObject WallContainer;
         public GameObject FloorContainer;
-
+        public GameObject EnemyHolder;
+        public GameObject ItemEndHolder;
+        public GameObject PlayerSearcher;
 
         [Header("Dungeon Settings")]
         public int amountRooms;
@@ -31,15 +35,30 @@ namespace Example
         private List<GameObject> allSpawnedObjects = new List<GameObject>();
 
         [Header("Other Variables")]
-        private bool playerSpawned;
         private int roomCount;
         private int WaitBeforeSpawn;
-        public int MobCount = 3;
+        public int MobCount = 2;
         public NavMeshSurface surface;
+        public List<GameObject> Powerups = new List<GameObject>();
+        private int randomMax = 4;
+        private int randomCurrent;
+        private int roomCountItems;
+        private PlayerTracker tracker;
+        private void Awake()
+        {
+            PlayerSearcher = GameObject.FindGameObjectWithTag("Tracker");
+            tracker = PlayerSearcher.GetComponent<PlayerTracker>();
+            CurrentPlayer = tracker.Player;
+        }
         void Start()
         {
+            randomCurrent = randomMax;
             GenerateDungeon();
             surface.BuildNavMesh();
+        }
+        private void Update()
+        {
+            CurrentPlayer = tracker.Player;
         }
 
         private void AllocateRooms()
@@ -65,6 +84,20 @@ namespace Example
 
         private void AddRoomToDungeon(Room room)
         {
+            int randomI = Random.Range(0, randomCurrent);
+            roomCountItems += 1;
+            bool canSpawn;
+            int canotspawn = 0;
+            if(randomI <= 1)
+            {
+                canSpawn = true;
+                canotspawn = 0;
+            }
+            else
+            {
+                canSpawn = false;
+                canotspawn = 1;
+            }
             for (int xx = room.position.x; xx < room.position.x + room.size.x; xx++)
             {
                 for (int yy = room.position.y; yy < room.position.y + room.size.y; yy++)
@@ -77,11 +110,29 @@ namespace Example
                         int rand = Random.Range(0, 80);
                         if (rand <= 3 && MobCount != 0 && WaitBeforeSpawn <=0)
                         {
-                            Instantiate(Enemy, new Vector3(xx, 0.5f, yy), Quaternion.identity);
+                            var enemy = Instantiate(Enemy, new Vector3(xx,1f, yy), Quaternion.identity);
+                            enemy.transform.SetParent(EnemyHolder.transform); 
                             MobCount--;
                             WaitBeforeSpawn = 55;
                         }
                         WaitBeforeSpawn -= 1;
+                    }
+                    if (canSpawn == true && xx == (room.position.x + room.size.x / 2) && yy == (room.position.y + room.size.y / 2) && roomCountItems != 1 && roomCountItems != amountRooms)
+                    {
+                        int item = Random.Range(0, Powerups.Count);
+                        var powerup = Instantiate(Powerups[item], new Vector3(xx, 1f, yy), Quaternion.identity);
+                        powerup.transform.SetParent(ItemEndHolder.transform);
+                        randomCurrent = randomMax;
+                        canSpawn = false;
+                    } else if(canSpawn == false && canotspawn == 1)
+                    {
+                        canotspawn = 0;
+                        randomCurrent -= 1;
+                    }
+                    if (roomCountItems == amountRooms && xx == (room.position.x + room.size.x / 2) && yy == (room.position.y + room.size.y / 2))
+                    {
+                        var end = Instantiate(EndPoint, new Vector3(xx, 1f, yy), Quaternion.identity);
+                        end.transform.SetParent(ItemEndHolder.transform);
                     }
                     
                 }
@@ -126,10 +177,14 @@ namespace Example
                 for(int x = startRoom.position.x; x != otherRoom.position.x; x += dirX)
                 {
                     Vector2Int pos = new Vector2Int(x, startRoom.position.y);
-                    if (playerSpawned == false)
+                    if (StaticVariables.PlayerSpawned == false)
                     {
                         Instantiate(Player, new Vector3(x,1,startRoom.position.y), Quaternion.identity);
-                        playerSpawned = true;
+                        StaticVariables.PlayerSpawned = true;
+                    } if(StaticVariables.PlayerSpawned == true && StaticVariables.Reset == true)
+                    {
+                        CurrentPlayer.transform.position = new Vector3(x, 1, startRoom.position.y);
+                        StaticVariables.Reset = false;
                     }
                     if (!dungeonDictionary.ContainsKey(pos))
                     {
@@ -183,6 +238,12 @@ namespace Example
                     }
                 }
             }
+        }
+
+        public void EndGame()
+        {
+            StaticVariables.Reset = true;
+            Destroy(gameObject);
         }
 
 

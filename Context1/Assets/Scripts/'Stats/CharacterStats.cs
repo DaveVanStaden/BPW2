@@ -3,16 +3,15 @@
 public class CharacterStats : MonoBehaviour
 {
     public int Health = 100;
-    public int currenthealth { get; private set; }
+    public int currenthealth { get; set; }
 
     public Stat damage;
     public Stat armor;
-
-    void Awake()
+    private void Awake()
     {
-        currenthealth = Health;
+        SetHealth();
     }
-    public void TakeDamage(int damage)
+    public virtual void TakeDamage(int damage)
     {
         damage -= armor.GetValue();
         damage = Mathf.Clamp(damage, 0, int.MaxValue);
@@ -26,4 +25,9 @@ public class CharacterStats : MonoBehaviour
     {
         //meant to be overwritten so each character can die in their own ways.
     }
+    public void SetHealth()
+    {
+        currenthealth = Health;
+    }
+
 }

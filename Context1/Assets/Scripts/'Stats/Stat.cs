@@ -5,7 +5,7 @@ using UnityEngine;
 [System.Serializable]
 public class Stat
 {
-    [SerializeField]private int baseValue;
+    public int baseValue;
 
     private List<int> modifiers = new List<int>();
     
@@ -14,20 +14,5 @@ public class Stat
         int finalValue = baseValue;
         modifiers.ForEach(x => finalValue += x);
         return finalValue;
-    }
-
-    public void AddModifier(int modifier)
-    {
-        if (modifier != 0)
-        {
-            modifiers.Add(modifier);
-        }
-    }
-    public void RemoveModifier(int modifier)
-    {
-        if (modifier != 0)
-        {
-            modifiers.Remove(modifier);
-        }
     }
 }

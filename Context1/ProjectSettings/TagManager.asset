@@ -5,6 +5,15 @@ TagManager:
   serializedVersion: 2
   tags:
   - Tracker
+  - DungeonHolder
+  - MainHolder
+  - StatHolder
+  - Enemy
+  - GunText
+  - HealthText
+  - DeathScene
+  - PauzeMenu
+  - EventManager
   layers:
   - Default
   - TransparentFX

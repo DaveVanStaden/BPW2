@@ -14,10 +14,7 @@ public class Projectile : MonoBehaviour
     public PlayerStats playerStats;
     private PlayerTracker tracker;
     private int damage;
-    private void Awake()
-    {
-        
-    }
+    private float timer;
     void Start()
     {
         stats = Enemy.GetComponent<EnemyStats>();
@@ -25,6 +22,9 @@ public class Projectile : MonoBehaviour
     }
     private void Update()
     {
+        timer += Time.deltaTime;
+        if (timer >= 2f)
+            Destroy(gameObject);
         PlayerTracker = GameObject.FindGameObjectWithTag("Tracker");
         tracker = PlayerTracker.GetComponent<PlayerTracker>();
         Player = tracker.Player;
@@ -36,6 +36,7 @@ public class Projectile : MonoBehaviour
         if(collision.gameObject.tag == "Player")
         {
             playerStats.TakeDamage(damage);
+            Destroy(gameObject);
         }
     }
 }
